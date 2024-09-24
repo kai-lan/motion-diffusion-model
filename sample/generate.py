@@ -23,6 +23,9 @@ def main():
     args = generate_args()
     fixseed(args.seed)
     out_path = args.output_dir
+    out_path = "output"
+    args.num_repetitions = 3
+
     name = os.path.basename(os.path.dirname(args.model_path))
     niter = os.path.basename(args.model_path).replace('model', '').replace('.pt', '')
     max_frames = 196 if args.dataset in ['kit', 'humanml'] else 60

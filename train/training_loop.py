@@ -156,6 +156,7 @@ class TrainLoop:
                     if os.environ.get("DIFFUSION_TRAINING_TEST", "") and self.step > 0:
                         return
                 self.step += 1
+            self.save() # always save at the end of each epoch.
             if not (not self.lr_anneal_steps or self.step + self.resume_step < self.lr_anneal_steps):
                 break
         # Save the last checkpoint if it wasn't already saved.

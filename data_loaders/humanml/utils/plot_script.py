@@ -91,21 +91,13 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, dataset, figsize=(3
     #     print(trajec.shape)
 
     def update(index):
-        #         print(index)
-        ax.lines = []
-        ax.collections = []
+        ax.clear()
         ax.view_init(elev=120, azim=-90)
         ax.dist = 7.5
-        #         ax =
-        plot_xzPlane(MINS[0] - trajec[index, 0], MAXS[0] - trajec[index, 0], 0, MINS[2] - trajec[index, 1],
-                     MAXS[2] - trajec[index, 1])
-        #         ax.scatter(dataset[index, :22, 0], dataset[index, :22, 1], dataset[index, :22, 2], color='black', s=3)
+        if len(title) > 1:
+            fig.suptitle(f"{title} {index}", fontsize=10)
+        plot_xzPlane(MINS[0] - trajec[index, 0], MAXS[0] - trajec[index, 0], 0, MINS[2] - trajec[index, 1], MAXS[2] - trajec[index, 1])
 
-        # if index > 1:
-        #     ax.plot3D(trajec[:index, 0] - trajec[index, 0], np.zeros_like(trajec[:index, 0]),
-        #               trajec[:index, 1] - trajec[index, 1], linewidth=1.0,
-        #               color='blue')
-        # #             ax = plot_xzPlane(ax, MINS[0], MAXS[0], 0, MINS[2], MAXS[2])
 
         used_colors = colors_blue if index in gt_frames else colors
         for i, (chain, color) in enumerate(zip(kinematic_tree, used_colors)):
@@ -115,18 +107,14 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, dataset, figsize=(3
                 linewidth = 2.0
             ax.plot3D(data[index, chain, 0], data[index, chain, 1], data[index, chain, 2], linewidth=linewidth,
                       color=color)
-        #         print(trajec[:index, 0].shape)
 
         plt.axis('off')
         ax.set_xticklabels([])
         ax.set_yticklabels([])
         ax.set_zticklabels([])
 
-    ani = FuncAnimation(fig, update, frames=frame_number, interval=1000 / fps, repeat=False)
+    ani = FuncAnimation(fig, update, frames=frame_number, interval=1000 // fps, repeat=False)
 
-    # writer = FFMpegFileWriter(fps=fps)
     ani.save(save_path, fps=fps)
-    # ani = FuncAnimation(fig, update, frames=frame_number, interval=1000 / fps, repeat=False, init_func=init)
-    # ani.save(save_path, writer='pillow', fps=1000 / fps)
 
     plt.close()
