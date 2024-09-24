@@ -156,7 +156,9 @@ class TrainLoop:
                     if os.environ.get("DIFFUSION_TRAINING_TEST", "") and self.step > 0:
                         return
                 self.step += 1
-            self.save() # always save at the end of each epoch.
+
+            self.save_last() # always save the latesr params at the end of each epoch.
+
             if not (not self.lr_anneal_steps or self.step + self.resume_step < self.lr_anneal_steps):
                 break
         # Save the last checkpoint if it wasn't already saved.
@@ -263,6 +265,28 @@ class TrainLoop:
     def ckpt_file_name(self):
         return f"model{(self.step+self.resume_step):09d}.pt"
 
+
+    def save_last(self):
+        def save_checkpoint(params):
+            state_dict = self.mp_trainer.master_params_to_state_dict(params)
+
+            # Do not save CLIP weights
+            clip_weights = [e for e in state_dict.keys() if e.startswith('clip_model.')]
+            for e in clip_weights:
+                del state_dict[e]
+
+            logger.log(f"saving model...")
+            filename = "model.pt"
+            with bf.BlobFile(bf.join(self.save_dir, filename), "wb") as f:
+                torch.save(state_dict, f)
+
+        save_checkpoint(self.mp_trainer.master_params)
+
+        with bf.BlobFile(
+            bf.join(self.save_dir, f"opt.pt"),
+            "wb",
+        ) as f:
+            torch.save(self.opt.state_dict(), f)
 
     def save(self):
         def save_checkpoint(params):
